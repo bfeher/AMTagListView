@@ -88,6 +88,12 @@ extern NSString * const AMTagViewNotification;
  */
 @property (nonatomic, weak) NSString *tagText;
 
+@property (nonatomic, strong) UIColor	*highlightedTextColor UI_APPEARANCE_SELECTOR;
+@property (nonatomic, strong) UIColor	*highlightedTagColor UI_APPEARANCE_SELECTOR;
+@property (nonatomic, strong) UIColor	*highlightedInnerTagColor UI_APPEARANCE_SELECTOR;
+@property (nonatomic) BOOL highlighted;
+
+
 /** Setup a new tag
  *
  * Sets up the tag with a given string

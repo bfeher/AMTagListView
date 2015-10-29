@@ -20,6 +20,10 @@
 #define kDefaultTagColor		[UIColor redColor]
 #define kDefaultInnerTagColor	[UIColor colorWithWhite:1 alpha:0.3]
 #define kDefaultImagePadding	3
+#define kDefaultHighlightedTextColor		[UIColor whiteColor]
+#define kDefaultHighlightedTagColor         [UIColor blackColor]
+#define kDefaultHighlightedInnerTagColor    [UIColor blueColor]
+
 
 NSString * const AMTagViewNotification = @"AMTagViewNotification";
 
@@ -47,6 +51,10 @@ NSString * const AMTagViewNotification = @"AMTagViewNotification";
     [[self appearance] setInnerTagColor:kDefaultInnerTagColor];
     [[self appearance] setAccessoryImage:nil];
     [[self appearance] setImagePadding:kDefaultImagePadding];
+    
+    [[self appearance] setHighlightedTextColor:kDefaultHighlightedTextColor];
+    [[self appearance] setHighlightedTagColor:kDefaultHighlightedTagColor];
+    [[self appearance] setHighlightedInnerTagColor:kDefaultHighlightedInnerTagColor];
 }
 
 #pragma mark - UIResponder
@@ -77,6 +85,12 @@ NSString * const AMTagViewNotification = @"AMTagViewNotification";
         _innerTagColor = [[[self class] appearance] innerTagColor];
         _accessoryImage = [[[self class] appearance] accessoryImage];
         _imagePadding = [[[self class] appearance] imagePadding];
+        
+        _highlighted = NO;
+        _highlightedTextColor = [[AMTagView appearance] highlightedTextColor];
+        _highlightedTagColor = [[AMTagView appearance] highlightedTagColor];
+        _highlightedInnerTagColor = [[AMTagView appearance] highlightedInnerTagColor];
+
         [self addSubview:self.labelText];
         [self addSubview:self.imageView];
         [self addSubview:self.button];
@@ -113,7 +127,10 @@ NSString * const AMTagViewNotification = @"AMTagViewNotification";
     }
 
     [self.button setFrame:buttonRect];
-    [self.labelText setTextColor:self.textColor];
+//    [self.labelText setTextColor:self.textColor];
+    
+    [self.labelText setTextColor:self.highlighted ? self.highlightedTextColor : self.textColor];
+    
     [self.labelText setFont:self.textFont];
 }
 
@@ -128,6 +145,8 @@ NSString * const AMTagViewNotification = @"AMTagViewNotification";
 #pragma mark - Private Interface
 
 - (void)actionButton:(id)sender {
+    [self setHighlighted:!self.highlighted];
+
     [[NSNotificationCenter defaultCenter] postNotification:[[NSNotification alloc] initWithName:AMTagViewNotification object:self userInfo:@{@"superview": self.superview}]];
 }
 
@@ -157,7 +176,8 @@ NSString * const AMTagViewNotification = @"AMTagViewNotification";
         [aPath appendPath:p2];
 
         // Set the render colors.
-        [self.tagColor setFill];
+//        [self.tagColor setFill];
+        self.highlighted ? [self.highlightedTagColor setFill] : [self.tagColor setFill];
 
         [aPath fill];
     }
@@ -176,7 +196,8 @@ NSString * const AMTagViewNotification = @"AMTagViewNotification";
     [background addArcWithCenter:(CGPoint){tagLength + left + radius, padding + radius} radius:radius startAngle:DEGREES_TO_RADIANS(180) endAngle:DEGREES_TO_RADIANS(270) clockwise:YES];
     [background closePath];
 
-    [self.innerTagColor setFill];
+//    [self.innerTagColor setFill];
+    self.highlighted ? [self.highlightedInnerTagColor setFill] : [self.innerTagColor setFill];
     [background fill];
 }
 
@@ -194,6 +215,17 @@ NSString * const AMTagViewNotification = @"AMTagViewNotification";
 }
 
 #pragma mark - Public Interface
+
+- (void)setHighlighted:(BOOL)highlighted
+{
+    _highlighted = highlighted;
+    _textColor      = highlighted ? [[AMTagView appearance] highlightedTextColor]      : [[AMTagView appearance] textColor];
+    _tagColor       = highlighted ? [[AMTagView appearance] highlightedTagColor]       : [[AMTagView appearance] tagColor];
+    _innerTagColor  = highlighted ? [[AMTagView appearance] highlightedInnerTagColor]  : [[AMTagView appearance] innerTagColor];
+    
+    [self setNeedsDisplay];
+    [self setNeedsLayout];
+}
 
 - (void)setupWithText:(NSString*)text {
     UIFont* font = self.textFont;
